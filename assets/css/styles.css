@@ -1,0 +1,27 @@
+/* Reseteo básico y fondo general */
+body {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+}
+
+/* Efecto Glassmorphism unificado */
+.glass-component {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Ajustes específicos del Canvas */
+canvas {
+    background: rgba(0, 0, 0, 0.15); /* Fondo oscuro semitransparente para el lienzo */
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 100%; /* Para que sea responsivo si la pantalla es más pequeña */
+    cursor: crosshair; /* Cursor de "mira" para invitar al usuario a hacer clic */
+}
