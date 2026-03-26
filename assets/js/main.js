@@ -9,6 +9,13 @@
     const progressText = document.getElementById("progress-text");
     const progressBar = document.getElementById("progress-bar");
     const statsList = document.getElementById("level-stats-list");
+    
+    // Nuevos elementos para Game Over
+    const gameOverScreen = document.getElementById("game-over-screen");
+    const gameOverTitle = document.getElementById("game-over-title");
+    const gameOverCount = document.getElementById("game-over-count");
+    const gameOverPercentage = document.getElementById("game-over-percentage");
+    const restartBtn = document.getElementById("restart-btn");
 
     // Variables de estado del juego
     let maxLevels = parseInt(levelSlider.value);      
@@ -16,6 +23,7 @@
     let totalCircles = maxLevels * 10;
     let eliminatedCount = 0;
     let statsPerLevel = {}; 
+    let isGameOver = false; // Variable de control
     
     let activeBubbles = [];     
     let explodingBubbles = [];  
@@ -73,7 +81,6 @@
         checkClick(mx, my) {
             let dx = mx - this.posX;
             let dy = my - this.posY;
-            // Damos 8 píxeles extra de "hitbox" para que el clic se sienta más permisivo e inmediato
             return Math.sqrt(dx * dx + dy * dy) < (this.radius + 8); 
         }
     }
@@ -113,7 +120,7 @@
         for (let i = 1; i <= maxLevels; i++) {
             let count = statsPerLevel[i] || 0; 
             let lvlPercentage = (count / 10) * 100; 
-            let isCurrent = (i === currentLevel) ? 'fw-bold text-info' : 'text-white opacity-75';
+            let isCurrent = (i === currentLevel && !isGameOver) ? 'fw-bold text-info' : 'text-white opacity-75';
             
             let li = document.createElement('li');
             li.className = `list-group-item bg-transparent border-0 px-0 py-1 ${isCurrent}`;
@@ -123,11 +130,34 @@
                     <span>${count}/10 (${Math.round(lvlPercentage)}%)</span>
                 </div>
                 <div class="progress" style="height: 4px; background-color: rgba(255,255,255,0.1);">
-                    <div class="progress-bar bg-${i === currentLevel ? 'info' : 'light'}" role="progressbar" style="width: ${lvlPercentage}%"></div>
+                    <div class="progress-bar bg-${i === currentLevel && !isGameOver ? 'info' : 'light'}" role="progressbar" style="width: ${lvlPercentage}%"></div>
                 </div>
             `;
             statsList.appendChild(li);
         }
+    }
+
+    // Muestra la ventana de resultados finales
+    function showGameOver() {
+        isGameOver = true;
+        let percentage = totalCircles === 0 ? 0 : (eliminatedCount / totalCircles) * 100;
+        let pctFormatted = Math.round(percentage);
+        
+        gameOverCount.textContent = `${eliminatedCount} / ${totalCircles}`;
+        gameOverPercentage.textContent = `${pctFormatted}%`;
+        
+        // Reglas de victoria (>= 70%) o derrota (<= 69%)
+        if (percentage >= 70) {
+            gameOverTitle.textContent = "¡Ganaste!";
+            gameOverTitle.className = "fw-bold mb-3 text-success";
+        } else {
+            gameOverTitle.textContent = "¡Perdiste!";
+            gameOverTitle.className = "fw-bold mb-3 text-danger";
+        }
+        
+        // Mostrar la ventana superpuesta
+        gameOverScreen.classList.remove('d-none');
+        updateUI(); // Para quitar el resaltado del nivel actual en el menú lateral
     }
 
     function spawnWave() {
@@ -141,7 +171,10 @@
         totalCircles = maxLevels * 10; 
         currentLevel = 1;
         eliminatedCount = 0;
+        isGameOver = false; // Resetear el estado
+        
         explodingBubbles = [];
+        gameOverScreen.classList.add('d-none'); // Ocultar la ventana de Game Over
         
         statsPerLevel = {};
         for(let i = 1; i <= maxLevels; i++) statsPerLevel[i] = 0;
@@ -168,15 +201,18 @@
             if (ex.opacity <= 0) explodingBubbles.splice(i, 1);
         }
 
+        // Si ya no hay burbujas activas
         if (activeBubbles.length === 0) {
             if (currentLevel < maxLevels) {
                 currentLevel++; 
                 spawnWave();    
+            } else if (!isGameOver && explodingBubbles.length === 0) {
+                // Si llegamos al último nivel y terminaron las explosiones
+                showGameOver();
             }
         }
     }
 
-    // Función unificada para obtener coordenadas exactas del puntero
     function getPointerPos(e) {
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
@@ -188,6 +224,7 @@
     }
 
     canvas.addEventListener('pointermove', (e) => {
+        if(isGameOver) return; // Desactivar hover si terminó
         const pos = getPointerPos(e);
         mouseX = pos.x;
         mouseY = pos.y;
@@ -195,8 +232,8 @@
 
     canvas.addEventListener('pointerleave', () => { mouseX = -100; mouseY = -100; });
 
-    // Usamos pointerdown para que registre el clic/toque al instante exacto de presionar
     canvas.addEventListener('pointerdown', (e) => {
+        if(isGameOver) return; // Bloquear clics si el juego terminó
         const pos = getPointerPos(e);
 
         for (let i = activeBubbles.length - 1; i >= 0; i--) {
@@ -213,6 +250,10 @@
         }
     });
 
+    // Listeners para iniciar/reiniciar
     levelSlider.addEventListener('input', initGame);
+    restartBtn.addEventListener('click', initGame); // Botón "Volver A Iniciar"
+
+    // Iniciar todo por primera vez
     initGame();
 })();

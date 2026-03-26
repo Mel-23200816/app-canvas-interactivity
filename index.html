@@ -44,8 +44,15 @@
             </div>
             
             <div class="row flex-grow-1 overflow-hidden">
-                <div class="col-lg-9 col-md-8 d-flex justify-content-center align-items-center h-100">
+                <div class="col-lg-9 col-md-8 position-relative d-flex justify-content-center align-items-center h-100">
                     <canvas id="game-canvas" width="800" height="450" class="shadow-lg" style="max-width: 100%; max-height: 100%; width: auto; height: auto; border-radius: 12px;"></canvas>
+                    
+                    <div id="game-over-screen" class="position-absolute top-50 start-50 translate-middle glass-component p-4 rounded-4 text-center d-none shadow-lg" style="z-index: 10; min-width: 320px; background: rgba(0,0,0,0.8);">
+                        <h2 id="game-over-title" class="fw-bold mb-3"></h2>
+                        <p class="fs-5 text-white mb-2">Círculos reventados: <span id="game-over-count" class="fw-bold text-info"></span></p>
+                        <p class="fs-5 text-white mb-4">Porcentaje: <span id="game-over-percentage" class="fw-bold text-info"></span></p>
+                        <button id="restart-btn" class="btn btn-lg btn-primary fw-bold w-100 shadow">Volver A Iniciar</button>
+                    </div>
                 </div>
                 
                 <div class="col-lg-3 col-md-4 h-100 d-flex flex-column">
